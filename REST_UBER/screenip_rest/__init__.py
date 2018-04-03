@@ -1,7 +1,7 @@
 from flask_restful import Resource
-from ubertool.ubertool.screenip import screenip_exe as screenip
+from pram_flask.ubertool.ubertool.screenip import screenip_exe as screenip
 from flask import request
-from REST_UBER import rest_validation, rest_schema, rest_model_caller
+from pram_flask.REST_UBER import rest_validation, rest_schema, rest_model_caller
 
 
 class ScreenipHandler(Resource):

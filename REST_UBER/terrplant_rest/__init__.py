@@ -1,7 +1,7 @@
 from flask_restful import Resource
-from ubertool.ubertool.terrplant import terrplant_exe as terrplant
+from pram_flask.ubertool.ubertool.terrplant import terrplant_exe as terrplant
 from flask import request, jsonify
-from REST_UBER import rest_validation, rest_schema, rest_model_caller
+from pram_flask.REST_UBER import rest_validation, rest_schema, rest_model_caller
 
 
 class TerrplantHandler(Resource):

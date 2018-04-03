@@ -1,7 +1,7 @@
 from flask_restful import Resource
-from ubertool.ubertool.leslie_probit import leslie_probit_exe as leslie_probit
+from pram_flask.ubertool.ubertool.leslie_probit import leslie_probit_exe as leslie_probit
 from flask import request
-from REST_UBER import rest_validation, rest_schema, rest_model_caller
+from pram_flask.REST_UBER import rest_validation, rest_schema, rest_model_caller
 
 
 class LeslieProbitHandler(Resource):

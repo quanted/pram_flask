@@ -1,7 +1,7 @@
 from flask_restful import Resource
-from ubertool.ubertool.earthworm import earthworm_exe as earthworm
+from pram_flask.ubertool.ubertool.earthworm import earthworm_exe as earthworm
 from flask import request
-from REST_UBER import rest_validation, rest_schema, rest_model_caller
+from pram_flask.REST_UBER import rest_validation, rest_schema, rest_model_caller
 
 
 class EarthwormHandler(Resource):

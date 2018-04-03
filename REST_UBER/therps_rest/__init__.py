@@ -1,7 +1,7 @@
 from flask_restful import Resource
-from ubertool.ubertool.therps import therps_exe as therps
+from pram_flask.ubertool.ubertool.therps import therps_exe as therps
 from flask import request, jsonify
-from REST_UBER import rest_validation, rest_schema, rest_model_caller
+from pram_flask.REST_UBER import rest_validation, rest_schema, rest_model_caller
 
 
 class TherpsHandler(Resource):

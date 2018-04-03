@@ -1,6 +1,6 @@
 import re
 from collections import defaultdict
-from REST_UBER.swagger_ui import ApiSpec, Operation, OperationResponses, OperationParameters
+from pram_flask.REST_UBER.swagger_ui import ApiSpec, Operation, OperationResponses, OperationParameters
 from werkzeug.routing import parse_rule
 import os
 import logging

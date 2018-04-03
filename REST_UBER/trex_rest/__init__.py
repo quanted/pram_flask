@@ -1,7 +1,7 @@
 from flask_restful import Resource
-from ubertool.ubertool.trex import trex_exe as trex
+from pram_flask.ubertool.ubertool.trex import trex_exe as trex
 from flask import request, jsonify
-from REST_UBER import rest_validation, rest_schema, rest_model_caller
+from pram_flask.REST_UBER import rest_validation, rest_schema, rest_model_caller
 # from REST_UBER.rest_jsonify import jsonify  # Override of Flask `jsonify` method to attempt to handle NumPy arrays
 
 

@@ -1,7 +1,7 @@
 from flask_restful import Resource
-from ubertool.ubertool.beerex import beerex_exe
+from pram_flask.ubertool.ubertool.beerex import beerex_exe
 from flask import request
-from REST_UBER import rest_validation, rest_schema, rest_model_caller
+from pram_flask.REST_UBER import rest_validation, rest_schema, rest_model_caller
 
 
 class BeerexHandler(Resource):

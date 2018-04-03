@@ -1,8 +1,9 @@
 from flask_restful import Resource
-from ubertool.ubertool.sam import sam_exe as sam
+from pram_flask.ubertool.ubertool.sam import sam_exe as sam
 from flask import request
-from REST_UBER import rest_validation, rest_schema, rest_model_caller
-from ubertool_ecorest.celery_qed import tasks
+from pram_flask.REST_UBER import rest_validation, rest_schema, rest_model_caller
+#from ubertool_ecorest.celery_qed import tasks
+from pram_flask import tasks
 
 class SamHandler(Resource):
     def __init__(self):
