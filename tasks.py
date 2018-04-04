@@ -16,19 +16,17 @@ from flask_restful import Resource
 logging.getLogger('celery.task.default').setLevel(logging.DEBUG)
 logging.getLogger().setLevel(logging.DEBUG)
 
-
-
-try:
+if __name__ == "pram_flask.tasks":
     from pram_flask.ubertool.ubertool.sam import sam_exe as sam
     from pram_flask.REST_UBER import rest_model_caller, rest_validation
-except:
+    from pram_flask.temp_config.set_environment import DeployEnv
+else:
     logging.info("SAM Task except import attempt..")
-    from .ubertool.ubertool.sam import sam_exe as sam
-    from .REST_UBER import rest_model_caller, rest_validation
+    from ubertool.ubertool.sam import sam_exe as sam
+    from REST_UBER import rest_model_caller, rest_validation
+    from temp_config.set_environment import DeployEnv
     logging.info("SAM Task except import complete!")
 
-
-from pram_flask.temp_config.set_environment import DeployEnv
 runtime_env = DeployEnv()
 runtime_env.load_deployment_environment()
 
