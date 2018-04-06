@@ -5,13 +5,15 @@ QED celery instance
 from __future__ import absolute_import
 import os
 import logging
-import redis
+# import redis
 import json
 import uuid
 
-from celery import Celery
+#from celery import Celery
 from flask import request, Response
 from flask_restful import Resource
+
+from flask_qed.celery_cgi import celery
 
 logging.getLogger('celery.task.default').setLevel(logging.DEBUG)
 logging.getLogger().setLevel(logging.DEBUG)
@@ -22,36 +24,37 @@ if __name__ == "pram_flask.tasks":
     from pram_flask.temp_config.set_environment import DeployEnv
 else:
     logging.info("SAM Task except import attempt..")
-    from ubertool.ubertool.sam import sam_exe as sam
-    from REST_UBER import rest_model_caller, rest_validation
-    from temp_config.set_environment import DeployEnv
+    from .ubertool.ubertool.sam import sam_exe as sam
+    from .REST_UBER import rest_model_caller, rest_validation
+    from .temp_config.set_environment import DeployEnv
     logging.info("SAM Task except import complete!")
 
-runtime_env = DeployEnv()
-runtime_env.load_deployment_environment()
-
-redis_hostname = os.environ.get('REDIS_HOSTNAME')
-redis_port = os.environ.get('REDIS_PORT')
-REDIS_HOSTNAME = os.environ.get('REDIS_HOSTNAME')
-
-if not os.environ.get('REDIS_HOSTNAME'):
-    os.environ.setdefault('REDIS_HOSTNAME', 'redis')
-    REDIS_HOSTNAME = os.environ.get('REDIS_HOSTNAME')
-
-logging.info("REDIS HOSTNAME: {}".format(REDIS_HOSTNAME))
-
-redis_conn = redis.StrictRedis(host=REDIS_HOSTNAME, port=6379, db=0)
+# runtime_env = DeployEnv()
+# runtime_env.load_deployment_environment()
+#
+# redis_hostname = os.environ.get('REDIS_HOSTNAME')
+# redis_port = os.environ.get('REDIS_PORT')
+# REDIS_HOSTNAME = os.environ.get('REDIS_HOSTNAME')
+#
+# if not os.environ.get('REDIS_HOSTNAME'):
+#     os.environ.setdefault('REDIS_HOSTNAME', 'redis')
+#     REDIS_HOSTNAME = os.environ.get('REDIS_HOSTNAME')
+#
+# logging.info("REDIS HOSTNAME: {}".format(REDIS_HOSTNAME))
+#
+# redis_conn = redis.StrictRedis(host=REDIS_HOSTNAME, port=6379, db=0)
 
 #app = Celery('tasks', broker='redis://localhost:6379/0', backend='redis://localhost:6379/0',)
-app = Celery('tasks', broker='redis://redis:6379/0', backend='redis://redis:6379/0',)
+# app = Celery('tasks', broker='redis://redis:6379/0', backend='redis://redis:6379/0',)
+#
+# app.conf.update(
+#     CELERY_ACCEPT_CONTENT=['json'],
+#     CELERY_TASK_SERIALIZER='json',
+#     CELERY_RESULT_SERIALIZER='json',
+#     CELERY_IGNORE_RESULT=False,
+#     CELERY_TRACK_STARTED=True,
+# )
 
-app.conf.update(
-    CELERY_ACCEPT_CONTENT=['json'],
-    CELERY_TASK_SERIALIZER='json',
-    CELERY_RESULT_SERIALIZER='json',
-    CELERY_IGNORE_RESULT=False,
-    CELERY_TRACK_STARTED=True,
-)
 
 class SamStatus(Resource):
     def get(self, task_id):
@@ -91,7 +94,8 @@ class SamRun(Resource):
         if use_celery:
             # SAM Run with celery
             try:
-                task_id = sam_run.apply_async(args=(jobId, valid_input["inputs"]), queue="sam", taskset_id=jobId)
+                # task_id = sam_run.apply_async(args=(jobId, valid_input["inputs"]), queue="sam", taskset_id=jobId)
+                task_id = sam_run.apply_async(args=(jobId, valid_input["inputs"]), queue="qed", taskset_id=jobId)
                 logging.info("SAM celery task initiated with task id:{}".format(task_id))
                 resp_body = json.dumps({'task_id': str(task_id.id)})
             except Exception as ex:
@@ -124,7 +128,8 @@ class SamData(Resource):
         return Response(data_json, mimetype='application/json')
 
 
-@app.task(name='tasks.sam_run', bind=True, ignore_result=False)
+# @app.task(name='tasks.sam_run', bind=True, ignore_result=False)
+@celery.task(name='pram_sam', bind=True, ignore_result=False)
 def sam_run(self, jobID, inputs):
     if sam_run.request.id is not None:
         task_id = sam_run.request.id
@@ -140,5 +145,5 @@ def sam_run(self, jobID, inputs):
 
 
 def sam_status(task_id):
-    task = app.AsyncResult(task_id)
+    task = celery.AsyncResult(task_id)
     return {"status": task.status}
