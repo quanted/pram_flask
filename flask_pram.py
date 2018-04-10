@@ -12,7 +12,7 @@ try:
     cors = True
 except ImportError:
     cors = False
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, Response, request, jsonify, render_template
 from flask_restful import Resource, Api
 
 
