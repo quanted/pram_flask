@@ -13,7 +13,9 @@ import uuid
 from flask import request, Response
 from flask_restful import Resource
 
-from flask_qed.celery_cgi import celery
+# from flask_qed.celery_cgi import celery
+#from ..celery_cgi import celery
+from celery_cgi import celery
 
 logging.getLogger('celery.task.default').setLevel(logging.DEBUG)
 logging.getLogger().setLevel(logging.DEBUG)
