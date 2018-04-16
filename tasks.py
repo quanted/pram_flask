@@ -60,7 +60,7 @@ else:
 #     CELERY_TRACK_STARTED=True,
 # )
 
-IN_DOCKER = False
+IN_DOCKER = True
 
 
 def connect_to_mongoDB():
