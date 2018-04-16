@@ -8,10 +8,13 @@ import logging
 # import redis
 import json
 import uuid
+from datetime import datetime
 
 #from celery import Celery
 from flask import request, Response
 from flask_restful import Resource
+
+import pymongo as pymongo
 
 # from flask_qed.celery_cgi import celery
 #from ..celery_cgi import celery
@@ -56,6 +59,23 @@ else:
 #     CELERY_IGNORE_RESULT=False,
 #     CELERY_TRACK_STARTED=True,
 # )
+
+IN_DOCKER = False
+
+
+def connect_to_mongoDB():
+    if IN_DOCKER is False:
+        # Dev env mongoDB
+        mongo = pymongo.MongoClient(host='mongodb://localhost:27017/0')
+    else:
+        # Production env mongoDB
+        mongo = pymongo.MongoClient(host='mongodb://mongodb:27017/0')
+
+    mongo_db = mongo['pram_tasks']
+    mongo.flask_hms.Collection.create_index([("date", pymongo.DESCENDING)], expireAfterSeconds=86400)
+    # ALL entries into mongo.flask_hms must have datetime.utcnow() timestamp, which is used to delete the record after 86400
+    # seconds, 24 hours.
+    return mongo_db
 
 
 class SamStatus(Resource):
@@ -117,7 +137,7 @@ class SamData(Resource):
     def get(self, task_id):
         dir_path = os.getcwd()
         logging.info("SAM data request for task id: {}".format(task_id))
-        file_path = './ubertool/ubertool/sam/bin/Results/' + str(task_id) + '/out_json.csv'
+        file_path = dir_path + '/pram_flask/ubertool/ubertool/sam/bin/Results/' + str(task_id) + '/out_json.csv'
         try:
             logging.info("SAM data request file path: {}".format(file_path))
             with open(file_path, 'rb') as data:
@@ -130,7 +150,6 @@ class SamData(Resource):
         return Response(data_json, mimetype='application/json')
 
 
-# @app.task(name='tasks.sam_run', bind=True, ignore_result=False)
 @celery.task(name='pram_sam', bind=True, ignore_result=False)
 def sam_run(self, jobID, inputs):
     if sam_run.request.id is not None:
@@ -140,12 +159,24 @@ def sam_run(self, jobID, inputs):
     logging.info("SAM CELERY task id: {}".format(task_id))
     logging.info("SAM CELERY task starting...")
     inputs["csrfmiddlewaretoken"] = {"0": task_id}
-    # Commented out model call for celery connection testing
     data = rest_model_caller.model_run("sam", task_id, inputs, module=sam)
-    # logging.info("SAM CELERY task test answer is: 42")
     logging.info("SAM CELERY task completed.")
+
+    logging.info("Dumping SAM data into database...")
+    mongo_db = connect_to_mongoDB()
+    posts = mongo_db.posts
+    time_stamp = datetime.utcnow()
+    data = {'_id': task_id, 'date': time_stamp, 'data': json.dumps(data['outputs'])}
+    posts.insert_one(data)
+    logging.info("Completed SAM data db dump.")
 
 
 def sam_status(task_id):
     task = celery.AsyncResult(task_id)
-    return {"status": task.status}
+    if task.status == "SUCCESS":
+        mongo_db = connect_to_mongoDB()
+        posts = mongo_db.posts
+        data = json.loads(posts.find_one({'_id': task_id})["data"])
+        return {"status": task.status, 'data': data}
+    else:
+        return {"status": task.status}
