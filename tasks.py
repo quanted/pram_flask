@@ -60,19 +60,20 @@ else:
 #     CELERY_TRACK_STARTED=True,
 # )
 
-IN_DOCKER = True
+IN_DOCKER = os.environ.get("IN_DOCKER")
 
 
 def connect_to_mongoDB():
-    if IN_DOCKER is False:
+    if IN_DOCKER == "False":
         # Dev env mongoDB
         mongo = pymongo.MongoClient(host='mongodb://localhost:27017/0')
+        print("MONGODB: mongodb://localhost:27017/0")
     else:
         # Production env mongoDB
         mongo = pymongo.MongoClient(host='mongodb://mongodb:27017/0')
-
+        print("MONGODB: mongodb://mongodb:27017/0")
     mongo_db = mongo['pram_tasks']
-    mongo.flask_hms.Collection.create_index([("date", pymongo.DESCENDING)], expireAfterSeconds=86400)
+    mongo.pram_tasks.Collection.create_index([("date", pymongo.DESCENDING)], expireAfterSeconds=86400)
     # ALL entries into mongo.flask_hms must have datetime.utcnow() timestamp, which is used to delete the record after 86400
     # seconds, 24 hours.
     return mongo_db
@@ -92,8 +93,9 @@ class SamStatus(Resource):
             # logging.info("SAM task id: " + task_id + " status: " + task['status'])
         except Exception as ex:
             task['status'] = str(ex)
+            task['data'] = {}
             logging.info("SAM task status request error: " + str(ex))
-        resp_body = json.dumps({'task_id': task_id, 'task_status': task['status']})
+        resp_body = json.dumps({'task_id': task_id, 'task_status': task['status'], 'task_data': task['data']})
         response = Response(resp_body, mimetype='application/json')
         return response
 
@@ -161,7 +163,6 @@ def sam_run(self, jobID, inputs):
     inputs["csrfmiddlewaretoken"] = {"0": task_id}
     data = rest_model_caller.model_run("sam", task_id, inputs, module=sam)
     logging.info("SAM CELERY task completed.")
-
     logging.info("Dumping SAM data into database...")
     mongo_db = connect_to_mongoDB()
     posts = mongo_db.posts
@@ -179,4 +180,4 @@ def sam_status(task_id):
         data = json.loads(posts.find_one({'_id': task_id})["data"])
         return {"status": task.status, 'data': data}
     else:
-        return {"status": task.status}
+        return {"status": task.status, 'data': {}}
