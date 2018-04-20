@@ -5,19 +5,16 @@ QED celery instance
 from __future__ import absolute_import
 import os
 import logging
-# import redis
 import json
 import uuid
 from datetime import datetime
 
-#from celery import Celery
 from flask import request, Response
 from flask_restful import Resource
 
 import pymongo as pymongo
 
 # from flask_qed.celery_cgi import celery
-#from ..celery_cgi import celery
 from celery_cgi import celery
 
 logging.getLogger('celery.task.default').setLevel(logging.DEBUG)
@@ -25,54 +22,28 @@ logging.getLogger().setLevel(logging.DEBUG)
 
 if __name__ == "pram_flask.tasks":
     from pram_flask.ubertool.ubertool.sam import sam_exe as sam
-    from pram_flask.REST_UBER import rest_model_caller, rest_validation
-    from pram_flask.temp_config.set_environment import DeployEnv
+    from pram_flask.REST_UBER import rest_model_caller
 else:
     logging.info("SAM Task except import attempt..")
     from .ubertool.ubertool.sam import sam_exe as sam
-    from .REST_UBER import rest_model_caller, rest_validation
-    from .temp_config.set_environment import DeployEnv
+    from .REST_UBER import rest_model_caller
     logging.info("SAM Task except import complete!")
 
-# runtime_env = DeployEnv()
-# runtime_env.load_deployment_environment()
-#
-# redis_hostname = os.environ.get('REDIS_HOSTNAME')
-# redis_port = os.environ.get('REDIS_PORT')
-# REDIS_HOSTNAME = os.environ.get('REDIS_HOSTNAME')
-#
-# if not os.environ.get('REDIS_HOSTNAME'):
-#     os.environ.setdefault('REDIS_HOSTNAME', 'redis')
-#     REDIS_HOSTNAME = os.environ.get('REDIS_HOSTNAME')
-#
-# logging.info("REDIS HOSTNAME: {}".format(REDIS_HOSTNAME))
-#
-# redis_conn = redis.StrictRedis(host=REDIS_HOSTNAME, port=6379, db=0)
+IN_DOCKER = os.environ.get("IN_DOCKER")
+IN_DOCKER = "False"
 
-#app = Celery('tasks', broker='redis://localhost:6379/0', backend='redis://localhost:6379/0',)
-# app = Celery('tasks', broker='redis://redis:6379/0', backend='redis://redis:6379/0',)
-#
-# app.conf.update(
-#     CELERY_ACCEPT_CONTENT=['json'],
-#     CELERY_TASK_SERIALIZER='json',
-#     CELERY_RESULT_SERIALIZER='json',
-#     CELERY_IGNORE_RESULT=False,
-#     CELERY_TRACK_STARTED=True,
-# )
-
-#IN_DOCKER = True
-IN_DOCKER = False
 
 def connect_to_mongoDB():
-    if IN_DOCKER is False:
+    if IN_DOCKER == "False":
         # Dev env mongoDB
         mongo = pymongo.MongoClient(host='mongodb://localhost:27017/0')
+        print("MONGODB: mongodb://localhost:27017/0")
     else:
         # Production env mongoDB
         mongo = pymongo.MongoClient(host='mongodb://mongodb:27017/0')
-
+        print("MONGODB: mongodb://mongodb:27017/0")
     mongo_db = mongo['pram_tasks']
-    mongo.flask_hms.Collection.create_index([("date", pymongo.DESCENDING)], expireAfterSeconds=86400)
+    mongo.pram_tasks.Collection.create_index([("date", pymongo.DESCENDING)], expireAfterSeconds=86400)
     # ALL entries into mongo.flask_hms must have datetime.utcnow() timestamp, which is used to delete the record after 86400
     # seconds, 24 hours.
     return mongo_db
@@ -92,8 +63,9 @@ class SamStatus(Resource):
             # logging.info("SAM task id: " + task_id + " status: " + task['status'])
         except Exception as ex:
             task['status'] = str(ex)
+            task['data'] = {}
             logging.info("SAM task status request error: " + str(ex))
-        resp_body = json.dumps({'task_id': task_id, 'task_status': task['status']})
+        resp_body = json.dumps({'task_id': task_id, 'task_status': task['status'], 'task_data': task['data']})
         response = Response(resp_body, mimetype='application/json')
         return response
 
@@ -135,18 +107,14 @@ class SamRun(Resource):
 
 class SamData(Resource):
     def get(self, task_id):
-        dir_path = os.getcwd()
         logging.info("SAM data request for task id: {}".format(task_id))
-        file_path = dir_path + '/pram_flask/ubertool/ubertool/sam/bin/Results/' + str(task_id) + '/out_json.csv'
-        try:
-            logging.info("SAM data request file path: {}".format(file_path))
-            with open(file_path, 'rb') as data:
-                data_json = data.read()
-            data_json = json.dumps(json.loads(data_json))
-        except FileNotFoundError as er:
-            logging.info("SAM data file not found, data request not successful.")
-            return "{'error': 'data file not found', 'file_path': " + str(file_path) + "}"
-        logging.info("SAM data file found, data request successful.")
+        status = sam_status(task_id)
+        if status['status'] == 'SUCCESS':
+            data_json = json.dumps(status['data'])
+            logging.info("SAM data found, data request successful.")
+        else:
+            data_json = ""
+            logging.info("SAM data not available for requested task id.")
         return Response(data_json, mimetype='application/json')
 
 
@@ -161,7 +129,6 @@ def sam_run(self, jobID, inputs):
     inputs["csrfmiddlewaretoken"] = {"0": task_id}
     data = rest_model_caller.model_run("sam", task_id, inputs, module=sam)
     logging.info("SAM CELERY task completed.")
-
     logging.info("Dumping SAM data into database...")
     mongo_db = connect_to_mongoDB()
     posts = mongo_db.posts
@@ -179,4 +146,4 @@ def sam_status(task_id):
         data = json.loads(posts.find_one({'_id': task_id})["data"])
         return {"status": task.status, 'data': data}
     else:
-        return {"status": task.status}
+        return {"status": task.status, 'data': {}}
