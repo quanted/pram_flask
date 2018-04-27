@@ -17,6 +17,8 @@ import pymongo as pymongo
 # from flask_qed.celery_cgi import celery
 from celery_cgi import celery
 
+from pram_flask.ubertool.ubertool.sam.Postprocessing.huc_summary_stats import SamPostprocessor
+
 logging.getLogger('celery.task.default').setLevel(logging.DEBUG)
 logging.getLogger().setLevel(logging.DEBUG)
 
@@ -118,6 +120,22 @@ class SamData(Resource):
         return Response(data_json, mimetype='application/json')
 
 
+class SamSummaryHUC8(Resource):
+    def get(self, task_id):
+        logging.info("SAM HUC88 summary request for task id: {}".format(task_id))
+        status = sam_status(task_id)
+        if status['status'] == 'SUCCESS':
+            if any(status['huc8_summary']):
+                data_json = json.dumps(status['huc8_summary'])
+            else:
+                data_json = json.dumps({'Error': 'No acute human drinking water toxicity threshold specified'})
+            logging.info("SAM HUC8 summary found, data request successful.")
+        else:
+            data_json = ""
+            logging.info("SAM data not available for requested task id.")
+        return Response(data_json, mimetype='application/json')
+
+
 @celery.task(name='pram_sam', bind=True, ignore_result=False)
 def sam_run(self, jobID, inputs):
     if sam_run.request.id is not None:
@@ -136,6 +154,14 @@ def sam_run(self, jobID, inputs):
     data = {'_id': task_id, 'date': time_stamp, 'data': json.dumps(data['outputs'])}
     posts.insert_one(data)
     logging.info("Completed SAM data db dump.")
+    postprocessor = SamPostprocessor(task_id)
+    print("Post-processor: fetching sam run data to process")
+    postprocessor.get_sam_data()
+    print("Post-processor: calculating HUC8 summary stats")
+    postprocessor.calc_huc_summary()
+    print("Post-processor: appending summary data to database record")
+    postprocessor.append_sam_data()
+    logging.info("Post-processor: complete")
 
 
 def sam_status(task_id):
@@ -143,7 +169,10 @@ def sam_status(task_id):
     if task.status == "SUCCESS":
         mongo_db = connect_to_mongoDB()
         posts = mongo_db.posts
-        data = json.loads(posts.find_one({'_id': task_id})["data"])
-        return {"status": task.status, 'data': data}
+        db_record = posts.find_one({'_id': task_id})
+        data = json.loads(db_record["data"])
+        huc8_sum = json.loads(db_record["huc8_summary"])
+        return {"status": task.status, 'data': data, 'huc8_summary': huc8_sum}
     else:
-        return {"status": task.status, 'data': {}}
+        return {"status": task.status, 'data': {}, 'huc8_summary': {}}
+
