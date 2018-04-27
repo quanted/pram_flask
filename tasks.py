@@ -136,7 +136,7 @@ class SamSummaryHUC8(Resource):
         return Response(data_json, mimetype='application/json')
 
 
-@celery.task(name='pram_sam', bind=True, ignore_result=False)
+@celery.task(name='pram_sam', bind=True)
 def sam_run(self, jobID, inputs):
     if sam_run.request.id is not None:
         task_id = sam_run.request.id
