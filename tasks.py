@@ -32,7 +32,7 @@ else:
     logging.info("SAM Task except import complete!")
 
 IN_DOCKER = os.environ.get("IN_DOCKER")
-IN_DOCKER = "False"
+#IN_DOCKER = "False"
 
 
 def connect_to_mongoDB():
