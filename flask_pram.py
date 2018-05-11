@@ -6,14 +6,13 @@ import pandas as pd
 import requests
 import sys
 import tabulate
-import pram_flask.tasks as tasks
 
 try:
     from flask_cors import CORS
     cors = True
 except ImportError:
     cors = False
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, Response, request, jsonify, render_template
 from flask_restful import Resource, Api
 
 
@@ -28,7 +27,7 @@ if cors:
 else:
     logging.debug("CORS not enabled")
 
-
+import pram_flask.tasks as tasks
 from pram_flask.REST_UBER import agdrift_rest as agdrift
 from pram_flask.REST_UBER import beerex_rest as beerex
 from pram_flask.REST_UBER import earthworm_rest as earthworm
@@ -43,6 +42,8 @@ from pram_flask.REST_UBER import stir_rest as stir
 from pram_flask.REST_UBER import terrplant_rest as terrplant
 from pram_flask.REST_UBER import therps_rest as therps
 from pram_flask.REST_UBER import trex_rest as trex
+from pram_flask.REST_UBER import varroapop_rest as varroapop
+
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 os.environ.update({
@@ -228,6 +229,7 @@ print('http://localhost:7777/rest/pram/sam/')
 api.add_resource(tasks.SamRun, '/rest/pram/sam/')
 api.add_resource(tasks.SamStatus, '/rest/pram/sam/status/<string:task_id>')
 api.add_resource(tasks.SamData, '/rest/pram/sam/data/<string:task_id>')
+api.add_resource(tasks.SamSummaryHUC8, '/rest/pram/sam/summary/huc8/<string:task_id>')
 #importing screenip instead of sip because of conda problems
 print('http://localhost:7777/rest/pram/sip/')
 api.add_resource(screenip.ScreenipGet, '/rest/pram/sip/')
@@ -244,6 +246,12 @@ api.add_resource(therps.TherpsPost, '/rest/pram/therps/<string:jobId>')
 print('http://localhost:7777/rest/pram/trex/')
 api.add_resource(trex.TrexGet, '/rest/pram/trex/')
 api.add_resource(trex.TrexPost, '/rest/pram/trex/<string:jobId>')
+print('http://localhost:7777/rest/pram/varroapop/')
+api.add_resource(varroapop.VarroapopGet, '/rest/pram/varroapop/')
+api.add_resource(varroapop.VarroapopPost, '/rest/pram/varroapop/<string:jobId>')
+api.add_resource(varroapop.VarroapopGetResults, '/rest/pram/varroapop/<string:api_sessionid>/results/') #proxy to R API
+api.add_resource(varroapop.VarroapopGetInput, '/rest/pram/varroapop/<string:api_sessionid>/input/') #proxy to R API
+api.add_resource(varroapop.VarroapopGetLog, '/rest/pram/varroapop/<string:api_sessionid>/log/') #proxy to R API
 #api.add_resource(ModelCaller, '/rest/pram/<string:model>/<string:jid>')  # Temporary generic route for API endpoints
 
 
