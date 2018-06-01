@@ -121,7 +121,7 @@ class SamData(Resource):
 
 class SamSummaryHUC8(Resource):
     def get(self, task_id):
-        logging.info("SAM HUC88 summary request for task id: {}".format(task_id))
+        logging.info("SAM HUC8 summary request for task id: {}".format(task_id))
         status = sam_status(task_id)
         if status['status'] == 'SUCCESS':
             if any(status['huc8_summary']):
@@ -129,6 +129,22 @@ class SamSummaryHUC8(Resource):
             else:
                 data_json = json.dumps({'Error': 'No acute human drinking water toxicity threshold specified'})
             logging.info("SAM HUC8 summary found, data request successful.")
+        else:
+            data_json = ""
+            logging.info("SAM data not available for requested task id.")
+        return Response(data_json, mimetype='application/json')
+
+
+class SamSummaryHUC12(Resource):
+    def get(self, task_id):
+        logging.info("SAM HUC12 summary request for task id: {}".format(task_id))
+        status = sam_status(task_id)
+        if status['status'] == 'SUCCESS':
+            if any(status['huc12_summary']):
+                data_json = json.dumps(status['huc12_summary'])
+            else:
+                data_json = json.dumps({'Error': 'No acute human drinking water toxicity threshold specified'})
+            logging.info("SAM HUC12 summary found, data request successful.")
         else:
             data_json = ""
             logging.info("SAM data not available for requested task id.")
@@ -156,7 +172,7 @@ def sam_run(self, jobID, inputs):
     postprocessor = SamPostprocessor(task_id)
     print("Post-processor: fetching sam run data to process")
     postprocessor.get_sam_data()
-    print("Post-processor: calculating HUC8 summary stats")
+    print("Post-processor: calculating HUC8 and HUC12 summary stats")
     postprocessor.calc_huc_summary()
     print("Post-processor: appending summary data to database record")
     postprocessor.append_sam_data()
@@ -171,7 +187,8 @@ def sam_status(task_id):
         db_record = posts.find_one({'_id': task_id})
         data = json.loads(db_record["data"])
         huc8_sum = json.loads(db_record["huc8_summary"])
-        return {"status": task.status, 'data': data, 'huc8_summary': huc8_sum}
+        huc12_sum = json.loads(db_record["huc12_summary"])
+        return {"status": task.status, 'data': data, 'huc8_summary': huc8_sum, 'huc12_summary': huc12_sum}
     else:
-        return {"status": task.status, 'data': {}, 'huc8_summary': {}}
+        return {"status": task.status, 'data': {}, 'huc8_summary': {}, 'huc12_summary': {}}
 
