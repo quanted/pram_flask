@@ -23,16 +23,15 @@ logging.getLogger('celery.task.default').setLevel(logging.DEBUG)
 logging.getLogger().setLevel(logging.DEBUG)
 
 if __name__ == "pram_flask.tasks":
-    from pram_flask.ubertool.ubertool.sam import sam_exe as sam
+    from pram_flask.ubertool.ubertool.sam2 import sam_exe as sam
     from pram_flask.REST_UBER import rest_model_caller
 else:
     logging.info("SAM Task except import attempt..")
-    from .ubertool.ubertool.sam import sam_exe as sam
+    from .ubertool.ubertool.sam2 import sam_exe as sam
     from .REST_UBER import rest_model_caller
     logging.info("SAM Task except import complete!")
 
 IN_DOCKER = os.environ.get("IN_DOCKER")
-IN_DOCKER = "False"
 
 
 def connect_to_mongoDB():
