@@ -225,12 +225,17 @@ api.add_resource(leslie_probit.LeslieProbitPost, '/rest/pram/leslie_probit/<stri
 print('http://localhost:7777/rest/pram/rice/')
 api.add_resource(rice.RiceGet, '/rest/pram/rice/')
 api.add_resource(rice.RicePost, '/rest/pram/rice/<string:jobId>')
+
 print('http://localhost:7777/rest/pram/sam/')
-api.add_resource(tasks.SamRun, '/rest/pram/sam/')
-api.add_resource(tasks.SamStatus, '/rest/pram/sam/status/<string:task_id>')
-api.add_resource(tasks.SamData, '/rest/pram/sam/data/<string:task_id>')
-api.add_resource(tasks.SamSummaryHUC8, '/rest/pram/sam/summary/huc8/<string:task_id>')
-api.add_resource(tasks.SamSummaryHUC12, '/rest/pram/sam/summary/huc12/<string:task_id>')
+try:
+    api.add_resource(tasks.SamRun, '/rest/pram/sam/')
+    api.add_resource(tasks.SamStatus, '/rest/pram/sam/status/<string:task_id>')
+    api.add_resource(tasks.SamData, '/rest/pram/sam/data/<string:task_id>')
+    api.add_resource(tasks.SamSummaryHUC8, '/rest/pram/sam/summary/huc8/<string:task_id>')
+    api.add_resource(tasks.SamSummaryHUC12, '/rest/pram/sam/summary/huc12/<string:task_id>')
+except Exception as e:
+    print("SAM ERROR: Unable to load application. {}".format(e))
+
 #importing screenip instead of sip because of conda problems
 print('http://localhost:7777/rest/pram/sip/')
 api.add_resource(screenip.ScreenipGet, '/rest/pram/sip/')
