@@ -17,18 +17,19 @@ import pymongo as pymongo
 # from flask_qed.celery_cgi import celery
 from celery_cgi import celery
 
-from pram_flask.ubertool.ubertool.sam.Postprocessing.huc_summary_stats import SamPostprocessor
-
 logging.getLogger('celery.task.default').setLevel(logging.DEBUG)
 logging.getLogger().setLevel(logging.DEBUG)
 
 if __name__ == "pram_flask.tasks":
     from pram_flask.ubertool.ubertool.sam2 import sam_exe as sam
     from pram_flask.REST_UBER import rest_model_caller
+    from pram_flask.ubertool.ubertool.sam.Postprocessing.huc_summary_stats import SamPostprocessor
 else:
     logging.info("SAM Task except import attempt..")
     from .ubertool.ubertool.sam2 import sam_exe as sam
     from .REST_UBER import rest_model_caller
+    from .ubertool.ubertool.sam.Postprocessing.huc_summary_stats import SamPostprocessor
+
     logging.info("SAM Task except import complete!")
 
 IN_DOCKER = os.environ.get("IN_DOCKER")
