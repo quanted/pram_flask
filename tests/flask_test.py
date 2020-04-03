@@ -1,7 +1,9 @@
 import json
-from flask_cgi import app
 import unittest
-
+try:
+    from flask_cgi import app
+except ImportError:
+    from flask_qed.flask_cgi import app
 
 class FlaskApiDocsTests(unittest.TestCase):
     """
