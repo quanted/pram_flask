@@ -1,5 +1,5 @@
 from flask_restful import Resource
-from pram_flask.ubertool.ubertool.sam import sam_exe as sam
+from pram_flask.ubertool.ubertool.sam2 import sam_exe as sam
 from flask import request
 from pram_flask.REST_UBER import rest_validation, rest_schema, rest_model_caller
 #from ubertool_ecorest.celery_qed import tasks
