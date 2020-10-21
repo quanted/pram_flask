@@ -7,3 +7,4 @@
 [submodule "ubertool"]
 	path = ubertool
 	url = https://github.com/quanted/ubertool
+	branch = dev
