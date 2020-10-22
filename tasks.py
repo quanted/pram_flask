@@ -21,7 +21,7 @@ logging.getLogger('celery.task.default').setLevel(logging.DEBUG)
 logging.getLogger().setLevel(logging.DEBUG)
 
 if __name__ == "pram_flask.tasks":
-    from pram_flask.ubertool.ubertool.sam2 import sam_exe as sam
+    from pram_flask.ubertool.ubertool.sam import sam_exe as sam
     from pram_flask.REST_UBER import rest_model_caller
     from pram_flask.ubertool.ubertool.sam.Postprocessing.huc_summary_stats import SamPostprocessor
 else:
