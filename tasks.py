@@ -26,7 +26,7 @@ if __name__ == "pram_flask.tasks":
     from pram_flask.ubertool.ubertool.sam.Postprocessing.huc_summary_stats import SamPostprocessor
 else:
     logging.info("SAM Task except import attempt..")
-    from .ubertool.ubertool.sam2 import sam_exe as sam
+    from .ubertool.ubertool.sam import sam_exe as sam
     from .REST_UBER import rest_model_caller
     from .ubertool.ubertool.sam.Postprocessing.huc_summary_stats import SamPostprocessor
 
