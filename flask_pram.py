@@ -53,7 +53,7 @@ os.environ.update({
 })
 
 #needs to be after project root is set
-import pram_flask.uber_swagger
+#import pram_flask.uber_swagger
 
 # TODO: Remove this and Generic model handler below... (not used with refactored models)
 _ACTIVE_MODELS = (
