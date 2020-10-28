@@ -28,6 +28,7 @@ else:
     logging.debug("CORS not enabled")
 
 import pram_flask.tasks as tasks
+"""
 from pram_flask.REST_UBER import agdrift_rest as agdrift
 from pram_flask.REST_UBER import beerex_rest as beerex
 from pram_flask.REST_UBER import earthworm_rest as earthworm
@@ -36,13 +37,14 @@ from pram_flask.REST_UBER import iec_rest as iec
 from pram_flask.REST_UBER import kabam_rest as kabam
 from pram_flask.REST_UBER import leslie_probit_rest as leslie_probit
 from pram_flask.REST_UBER import rice_rest as rice
-# from REST_UBER import sam_rest as sam
 from pram_flask.REST_UBER import screenip_rest as screenip
 from pram_flask.REST_UBER import stir_rest as stir
 from pram_flask.REST_UBER import terrplant_rest as terrplant
 from pram_flask.REST_UBER import therps_rest as therps
 from pram_flask.REST_UBER import trex_rest as trex
 from pram_flask.REST_UBER import varroapop_rest as varroapop
+"""
+from pram_flask.REST_UBER import sam_rest as sam
 
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
@@ -201,6 +203,7 @@ def page_not_found(e):
 # TODO: Add model endpoints here once they are refactored
 print('http://localhost:7777/api/pram/')
 print('http://localhost:7777/api/pram/spec/')
+"""
 print('http://localhost:7777/rest/pram/agdrift/')
 api.add_resource(agdrift.AgdriftGet, '/rest/pram/agdrift/')
 api.add_resource(agdrift.AgdriftPost, '/rest/pram/agdrift/<string:jobId>')
@@ -226,12 +229,6 @@ print('http://localhost:7777/rest/pram/rice/')
 api.add_resource(rice.RiceGet, '/rest/pram/rice/')
 api.add_resource(rice.RicePost, '/rest/pram/rice/<string:jobId>')
 
-print('http://localhost:7777/rest/pram/sam/')
-api.add_resource(tasks.SamRun, '/rest/pram/sam/')
-api.add_resource(tasks.SamStatus, '/rest/pram/sam/status/<string:task_id>')
-api.add_resource(tasks.SamData, '/rest/pram/sam/data/<string:task_id>')
-api.add_resource(tasks.SamSummaryHUC8, '/rest/pram/sam/summary/huc8/<string:task_id>')
-api.add_resource(tasks.SamSummaryHUC12, '/rest/pram/sam/summary/huc12/<string:task_id>')
 
 #importing screenip instead of sip because of conda problems
 print('http://localhost:7777/rest/pram/sip/')
@@ -256,7 +253,13 @@ api.add_resource(varroapop.VarroapopGetResults, '/rest/pram/varroapop/<string:ap
 api.add_resource(varroapop.VarroapopGetInput, '/rest/pram/varroapop/<string:api_sessionid>/input/') #proxy to R API
 api.add_resource(varroapop.VarroapopGetLog, '/rest/pram/varroapop/<string:api_sessionid>/log/') #proxy to R API
 #api.add_resource(ModelCaller, '/rest/pram/<string:model>/<string:jid>')  # Temporary generic route for API endpoints
-
+"""
+print('http://localhost:7777/rest/pram/sam/')
+api.add_resource(tasks.SamRun, '/rest/pram/sam/')
+api.add_resource(tasks.SamStatus, '/rest/pram/sam/status/<string:task_id>')
+api.add_resource(tasks.SamData, '/rest/pram/sam/data/<string:task_id>')
+api.add_resource(tasks.SamSummaryHUC8, '/rest/pram/sam/summary/huc8/<string:task_id>')
+api.add_resource(tasks.SamSummaryHUC12, '/rest/pram/sam/summary/huc12/<string:task_id>')
 
 if __name__ == '__main__':
     app.run(port=7777, debug=True)
