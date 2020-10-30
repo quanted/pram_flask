@@ -12,6 +12,7 @@ def model_run(model, jobId, inputs, module):
         #print('inputs')
         #print(inputs)
     pd_obj = pd.DataFrame.from_dict(inputs, dtype='float64')
+    # Sam model class (sam_exe.Sam)
     model_class = getattr(module, model.capitalize())
     model_obj = model_class(pd_obj, None)
     model_obj.execute_model()
