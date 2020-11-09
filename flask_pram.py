@@ -28,7 +28,7 @@ else:
     logging.debug("CORS not enabled")
 
 import pram_flask.tasks as tasks
-from pram_flask.REST_UBER import agdrift_rest as agdrift
+# from pram_flask.REST_UBER import agdrift_rest as agdrift
 from pram_flask.REST_UBER import beerex_rest as beerex
 from pram_flask.REST_UBER import earthworm_rest as earthworm
 from pram_flask.REST_UBER import exponential_rest as exponential
@@ -55,7 +55,7 @@ os.environ.update({
 
 # TODO: Remove this and Generic model handler below... (not used with refactored models)
 _ACTIVE_MODELS = (
-    'agdrift',
+    #'agdrift',
     'beerex',
     'earthworm',
     'exponential',
@@ -201,9 +201,9 @@ def page_not_found(e):
 # TODO: Add model endpoints here once they are refactored
 print('http://localhost:7777/api/pram/')
 print('http://localhost:7777/api/pram/spec/')
-print('http://localhost:7777/rest/pram/agdrift/')
-api.add_resource(agdrift.AgdriftGet, '/rest/pram/agdrift/')
-api.add_resource(agdrift.AgdriftPost, '/rest/pram/agdrift/<string:jobId>')
+#print('http://localhost:7777/rest/pram/agdrift/')
+#api.add_resource(agdrift.AgdriftGet, '/rest/pram/agdrift/')
+#api.add_resource(agdrift.AgdriftPost, '/rest/pram/agdrift/<string:jobId>')
 print('http://localhost:7777/rest/pram/beerex/')
 api.add_resource(beerex.BeerexGet, '/rest/pram/beerex/')
 api.add_resource(beerex.BeerexPost, '/rest/pram/beerex/<string:jobId>')
