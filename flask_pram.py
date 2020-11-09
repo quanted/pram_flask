@@ -28,7 +28,6 @@ else:
     logging.debug("CORS not enabled")
 
 import pram_flask.tasks as tasks
-"""
 from pram_flask.REST_UBER import agdrift_rest as agdrift
 from pram_flask.REST_UBER import beerex_rest as beerex
 from pram_flask.REST_UBER import earthworm_rest as earthworm
@@ -43,7 +42,6 @@ from pram_flask.REST_UBER import terrplant_rest as terrplant
 from pram_flask.REST_UBER import therps_rest as therps
 from pram_flask.REST_UBER import trex_rest as trex
 from pram_flask.REST_UBER import varroapop_rest as varroapop
-"""
 from pram_flask.REST_UBER import sam_rest as sam
 
 
