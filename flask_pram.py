@@ -28,7 +28,6 @@ else:
     logging.debug("CORS not enabled")
 
 import pram_flask.tasks as tasks
-"""
 from pram_flask.REST_UBER import agdrift_rest as agdrift
 from pram_flask.REST_UBER import beerex_rest as beerex
 from pram_flask.REST_UBER import earthworm_rest as earthworm
@@ -43,7 +42,6 @@ from pram_flask.REST_UBER import terrplant_rest as terrplant
 from pram_flask.REST_UBER import therps_rest as therps
 from pram_flask.REST_UBER import trex_rest as trex
 from pram_flask.REST_UBER import varroapop_rest as varroapop
-"""
 from pram_flask.REST_UBER import sam_rest as sam
 
 
@@ -203,7 +201,6 @@ def page_not_found(e):
 # TODO: Add model endpoints here once they are refactored
 print('http://localhost:7777/api/pram/')
 print('http://localhost:7777/api/pram/spec/')
-"""
 print('http://localhost:7777/rest/pram/agdrift/')
 api.add_resource(agdrift.AgdriftGet, '/rest/pram/agdrift/')
 api.add_resource(agdrift.AgdriftPost, '/rest/pram/agdrift/<string:jobId>')
@@ -253,7 +250,7 @@ api.add_resource(varroapop.VarroapopGetResults, '/rest/pram/varroapop/<string:ap
 api.add_resource(varroapop.VarroapopGetInput, '/rest/pram/varroapop/<string:api_sessionid>/input/') #proxy to R API
 api.add_resource(varroapop.VarroapopGetLog, '/rest/pram/varroapop/<string:api_sessionid>/log/') #proxy to R API
 #api.add_resource(ModelCaller, '/rest/pram/<string:model>/<string:jid>')  # Temporary generic route for API endpoints
-"""
+
 print('http://localhost:7777/rest/pram/sam/')
 api.add_resource(tasks.SamRun, '/rest/pram/sam/')
 api.add_resource(tasks.SamStatus, '/rest/pram/sam/status/<string:task_id>')
