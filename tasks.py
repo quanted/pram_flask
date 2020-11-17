@@ -188,8 +188,8 @@ def sam_status(task_id):
         posts = mongo_db.posts
         db_record = posts.find_one({'_id': task_id})
         data = json.loads(db_record["data"])
-        huc8_sum = json.loads(dict(db_record).get("huc8_summary"))
-        huc12_sum = json.loads(dict(db_record).get("huc12_summary"))
+        huc8_sum = json.loads(dict(db_record).get("huc8_summary", default=""))
+        huc12_sum = json.loads(dict(db_record).get("huc12_summary", default=""))
         return {"status": task.status, 'data': data, 'huc8_summary': huc8_sum, 'huc12_summary': huc12_sum}
     else:
         return {"status": task.status, 'data': {}, 'huc8_summary': {}, 'huc12_summary': {}}
