@@ -63,12 +63,13 @@ class SamStatus(Resource):
         try:
             task = sam_status(task_id)
             # logging.info("SAM task id: " + task_id + " status: " + task['status'])
+            resp_body = json.dumps({'task_id': task_id, 'task_status': task['status'], 'task_data': task['data']})
         except Exception as ex:
             task['status'] = 'Error fetching status'
             task['error'] = repr(ex)
             task['data'] = {}
             logging.info("SAM task status request error: " + str(ex))
-        resp_body = json.dumps({'task_id': task_id, 'task_status': task['status'], 'task_data': task['data'], 'error': task['error']})
+            resp_body = json.dumps({'task_id': task_id, 'task_status': task['status'], 'task_data': task['data'], 'error': task['error']})
         response = Response(resp_body, mimetype='application/json')
         return response
 
