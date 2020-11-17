@@ -64,10 +64,11 @@ class SamStatus(Resource):
             task = sam_status(task_id)
             # logging.info("SAM task id: " + task_id + " status: " + task['status'])
         except Exception as ex:
-            task['status'] = str(ex)
+            task['status'] = 'Error fetching status'
+            task['error'] = repr(ex)
             task['data'] = {}
             logging.info("SAM task status request error: " + str(ex))
-        resp_body = json.dumps({'task_id': task_id, 'task_status': task['status'], 'task_data': task['data']})
+        resp_body = json.dumps({'task_id': task_id, 'task_status': task['status'], 'task_data': task['data'], 'error': task['error']})
         response = Response(resp_body, mimetype='application/json')
         return response
 
@@ -187,8 +188,8 @@ def sam_status(task_id):
         posts = mongo_db.posts
         db_record = posts.find_one({'_id': task_id})
         data = json.loads(db_record["data"])
-        huc8_sum = json.loads(db_record["huc8_summary"])
-        huc12_sum = json.loads(db_record["huc12_summary"])
+        huc8_sum = json.loads(dict(db_record).get("huc8_summary"))
+        huc12_sum = json.loads(dict(db_record).get("huc12_summary"))
         return {"status": task.status, 'data': data, 'huc8_summary': huc8_sum, 'huc12_summary': huc12_sum}
     else:
         return {"status": task.status, 'data': {}, 'huc8_summary': {}, 'huc12_summary': {}}
