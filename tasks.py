@@ -175,10 +175,10 @@ def sam_run(self, jobID, inputs):
     postprocessor = SamPostprocessor(task_id)
     print("Post-processor: fetching sam run data to process")
     postprocessor.get_sam_data()
-    #print("Post-processor: calculating HUC8 and HUC12 summary stats")
-    #postprocessor.calc_huc_summary()
-    #print("Post-processor: appending summary data to database record")
-    #postprocessor.append_sam_data()
+    print("Post-processor: calculating HUC8 and HUC12 summary stats")
+    postprocessor.calc_huc_summary()
+    print("Post-processor: appending summary data to database record")
+    postprocessor.append_sam_data()
     logging.info("Post-processor: complete")
 
 
