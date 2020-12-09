@@ -23,12 +23,10 @@ logging.getLogger().setLevel(logging.DEBUG)
 if __name__ == "pram_flask.tasks":
     from pram_flask.ubertool.ubertool.sam import sam_exe as sam
     from pram_flask.REST_UBER import rest_model_caller
-    from pram_flask.ubertool.ubertool.sam.Postprocessing.huc_summary_stats import SamPostprocessor
 else:
     logging.info("SAM Task except import attempt..")
     from .ubertool.ubertool.sam import sam_exe as sam
     from .REST_UBER import rest_model_caller
-    from .ubertool.ubertool.sam.Postprocessing.huc_summary_stats import SamPostprocessor
 
     logging.info("SAM Task except import complete!")
 
@@ -69,7 +67,8 @@ class SamStatus(Resource):
             task['error'] = repr(ex)
             task['data'] = {}
             logging.info("SAM task status request error: " + str(ex))
-            resp_body = json.dumps({'task_id': task_id, 'task_status': task['status'], 'task_data': task['data'], 'error': task['error']})
+            resp_body = json.dumps(
+                {'task_id': task_id, 'task_status': task['status'], 'task_data': task['data'], 'error': task['error']})
         response = Response(resp_body, mimetype='application/json')
         return response
 
@@ -172,14 +171,6 @@ def sam_run(self, jobID, inputs):
     data = {'_id': task_id, 'date': time_stamp, 'data': json.dumps(data['outputs'])}
     posts.insert_one(data)
     logging.info("Completed SAM data db dump.")
-    postprocessor = SamPostprocessor(task_id)
-    print("Post-processor: fetching sam run data to process")
-    postprocessor.get_sam_data()
-    print("Post-processor: calculating HUC8 and HUC12 summary stats")
-    postprocessor.calc_huc_summary()
-    print("Post-processor: appending summary data to database record")
-    postprocessor.append_sam_data()
-    logging.info("Post-processor: complete")
 
 
 def sam_status(task_id):
@@ -189,9 +180,6 @@ def sam_status(task_id):
         posts = mongo_db.posts
         db_record = dict(posts.find_one({'_id': task_id}))
         data = json.loads(db_record.get("data", ""))
-        huc8_sum = json.loads(db_record.get("huc8_summary", "null"))
-        huc12_sum = json.loads(db_record.get("huc12_summary", "null"))
-        return {"status": task.status, 'data': data, 'huc8_summary': huc8_sum, 'huc12_summary': huc12_sum}
+        return {"status": task.status, 'data': data}
     else:
-        return {"status": task.status, 'data': {}, 'huc8_summary': {}, 'huc12_summary': {}}
-
+        return {"status": task.status, 'data': {}}
