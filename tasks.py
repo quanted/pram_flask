@@ -13,9 +13,8 @@ from flask import request, Response
 from flask_restful import Resource
 
 import pymongo as pymongo
+from dask.distributed import Client, LocalCluster, fire_and_forget
 
-# from flask_qed.celery_cgi import celery
-from celery_cgi import celery
 
 logging.getLogger('celery.task.default').setLevel(logging.DEBUG)
 logging.getLogger().setLevel(logging.DEBUG)
@@ -31,6 +30,7 @@ else:
     logging.info("SAM Task except import complete!")
 
 IN_DOCKER = os.environ.get("IN_DOCKER")
+USE_DASK = os.getenv("DASK", "True") == "True"
 
 
 def connect_to_mongoDB():
@@ -47,6 +47,20 @@ def connect_to_mongoDB():
     # ALL entries into mongo.flask_hms must have datetime.utcnow() timestamp, which is used to delete the record after 86400
     # seconds, 24 hours.
     return mongo_db
+
+
+def get_dask_client():
+    if not USE_DASK:
+        return None
+    if IN_DOCKER == "True":
+        scheduler_name = os.getenv('DASK_SCHEDULER', "pram-dask-scheduler:8786")
+        logging.info(f"Dask Scheduler: {scheduler_name}")
+        dask_client = Client(scheduler_name)
+    else:
+        logging.info("Dask Scheduler: Local Cluster")
+        scheduler = LocalCluster(processes=False)
+        dask_client = Client(scheduler)
+    return dask_client
 
 
 class SamStatus(Resource):
@@ -82,24 +96,21 @@ class SamRun(Resource):
         """
         logging.info("SAM task start request with inputs: {}".format(str(request.form)))
         indexed_inputs = {}
-        # TODO: set based on env variable
-        use_celery = True
-        # index the input dictionary
         for k, v in request.form.items():
             indexed_inputs[k] = {"0": v}
         valid_input = {"inputs": indexed_inputs, "run_type": "single"}
-        if use_celery:
-            # SAM Run with celery
+        if USE_DASK:
             try:
-                # task_id = sam_run.apply_async(args=(jobId, valid_input["inputs"]), queue="sam", taskset_id=jobId)
-                task_id = sam_run.apply_async(args=(jobId, valid_input["inputs"]), queue="qed", taskset_id=jobId)
-                logging.info("SAM celery task initiated with task id:{}".format(task_id))
-                resp_body = json.dumps({'task_id': str(task_id.id)})
+                dask_client = get_dask_client()
+                task_id = uuid.uuid4()
+                sam_task = dask_client.submit(sam_run, task_id, valid_input["inputs"])
+                fire_and_forget(sam_task)
+                resp_body = json.dumps({'task_id': str(task_id)})
             except Exception as ex:
                 logging.info("SAM celery task failed: " + str(ex))
                 resp_body = json.dumps({'task_id': "1234567890"})
         else:
-            # SAM Run without celery
+            # SAM Run without Dask
             task_id = uuid.uuid4()
             sam_run(task_id, valid_input["inputs"])
             logging.info("SAM flask task completed with task id:{}".format(task_id))
@@ -153,33 +164,37 @@ class SamSummaryHUC12(Resource):
         return Response(data_json, mimetype='application/json')
 
 
-@celery.task(name='pram_sam', bind=True)
-def sam_run(self, jobID, inputs):
-    if sam_run.request.id is not None:
-        task_id = sam_run.request.id
-    else:
-        task_id = jobID
+def sam_run(task_id, inputs):
     logging.info("SAM CELERY task id: {}".format(task_id))
     logging.info("SAM CELERY task starting...")
-    inputs["csrfmiddlewaretoken"] = {"0": task_id}
-    data = rest_model_caller.model_run("sam", task_id, inputs, module=sam)
-    logging.info("SAM CELERY task completed.")
-    logging.info("Dumping SAM data into database...")
     mongo_db = connect_to_mongoDB()
     posts = mongo_db.posts
     time_stamp = datetime.utcnow()
-    data = {'_id': task_id, 'date': time_stamp, 'data': json.dumps(data['outputs'])}
+    data = {'_id': task_id, 'date': time_stamp, 'data': {}, 'status': "STARTED"}
     posts.insert_one(data)
+    inputs["csrfmiddlewaretoken"] = {"0": task_id}
+    try:
+        result_data = rest_model_caller.model_run("sam", task_id, inputs, module=sam)
+        result_data = json.dumps(result_data['outputs'])
+        status = "SUCCESS"
+        logging.info("SAM CELERY task completed.")
+    except Exception as e:
+        result_data = f"Error running sam, message: {e}"
+        logging.info(f"Error running sam, message: {e}")
+        status = "FAILED"
+    logging.info("Dumping SAM data into database...")
+    time_stamp = datetime.utcnow()
+    data = {'date': time_stamp, 'data': result_data, 'status': status}
+    posts.update_one({'_id': task_id}, data)
     logging.info("Completed SAM data db dump.")
 
 
 def sam_status(task_id):
-    task = celery.AsyncResult(task_id)
-    if task.status == "SUCCESS":
-        mongo_db = connect_to_mongoDB()
-        posts = mongo_db.posts
-        db_record = dict(posts.find_one({'_id': task_id}))
+    mongo_db = connect_to_mongoDB()
+    posts = mongo_db.posts
+    db_record = dict(posts.find_one({'_id': task_id}))
+    if db_record["status"] == "SUCCESS":
         data = json.loads(db_record.get("data", ""))
-        return {"status": task.status, 'data': data}
+        return {"status": db_record["status"], "data": data}
     else:
-        return {"status": task.status, 'data': {}}
+        return {"status": db_record["status"], "data": {}}
