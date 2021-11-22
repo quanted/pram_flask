@@ -16,7 +16,9 @@ RUN apt-get install -y --fix-missing --no-install-recommends \
     pip install -U pip
 
 COPY uwsgi.ini /etc/uwsgi/
-COPY . /src/pram_flask
+#COPY . /src/pram_flask
+RUN mkdir /src && cd /src && git clone -b dev-k https://github.com/quanted/pram_flask.git
+RUN cd /src/pram_flask && git submodule update --init && git submodule foreach --recursive git checkout dev && git submodule foreach --recursive git pull origin dev
 RUN chmod 755 /src/pram_flask/start_flask.sh
 WORKDIR /src/
 EXPOSE 8080
