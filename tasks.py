@@ -181,7 +181,7 @@ def sam_run(self, jobID, inputs):
     #intakes_json = data['outputs']['intakes']
     #watersheds_json = data['outputs']['watersheds']
     #intake_time_series_json = data['outputs']['intake_time_series']
-    save_sam_outputs(posts, task_id, data['outputs'])
+    save_sam_outputs(posts, task_id, json.dumps(data['outputs']))
     #data = {'_id': task_id, 'date': time_stamp, 'intakes': json.dumps(intakes_json), 'watersheds': json.dumps(watersheds_json),
     #    'intake_time_series': json.dumps(intake_time_series_json)}
     #posts.insert_one(data)
@@ -192,7 +192,7 @@ def save_sam_outputs(mongodb_posts, task_id, output_dict):
     time_stamp = datetime.utcnow()
     for  key, value in output_dict.items():
         logging.info('storing {}'.format(task_id+'_'+key))
-        data = {'_id': task_id+'_'+key, 'date': time_stamp, 'data': {key:value}}
+        data = {'_id': task_id+'_'+key, 'date': time_stamp, 'data': value}
         mongodb_posts.insert_one(data)
 
 def sam_status(task_id, map_data_only=False):
