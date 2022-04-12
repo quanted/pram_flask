@@ -202,12 +202,12 @@ def sam_status(task_id, map_data_only=False):
         posts = mongo_db.posts
         intakes_db_record = dict(posts.find_one({'_id': task_id+'_intakes'}))
         intakes_data = data = json.loads(intakes_db_record.get("data", ""))
-        watersheds_db_record = dict(posts.find_one({'_id': task_id+'_intakes'}))
+        watersheds_db_record = dict(posts.find_one({'_id': task_id+'_watersheds'}))
         watersheds_data = data = json.loads(watersheds_db_record.get("data", ""))
         if map_data_only:
             data_return = {'intakes': intakes_data, 'watersheds': watersheds_data}
             return {"status": task.status, 'data': data_return}
-        intake_time_series_db_record = dict(posts.find_one({'_id'+'_intake_time_series': task_id+'_intakes'}))
+        intake_time_series_db_record = dict(posts.find_one({'_id': task_id+'_intake_time_series'}))
         intake_time_series_data = json.loads(intake_time_series_db_record.get("data", ""))
         data_return = {'intakes': intakes_data, 'watersheds': watersheds_data, 'intake_time_series': intake_time_series_data}
         return {"status": task.status, 'data': data_return}
