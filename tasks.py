@@ -197,10 +197,10 @@ def sam_status(task_id, map_data_only=False):
         intakes_data = data = json.loads(db_record.get("intakes", ""))
         watersheds_data = data = json.loads(db_record.get("watersheds", ""))
         if map_data_only:
-            data_return = {'intakes': intakes_data, 'watersheds', watersheds_data}
+            data_return = {'intakes': intakes_data, 'watersheds': watersheds_data}
             return {"status": task.status, 'data': data_return}
         intake_time_series_data = json.loads(db_record.get("intake_time_series", ""))
-        data_return = {'intakes': intakes_data, 'watersheds', watersheds_data, 'intake_time_series': intake_time_series_data}
+        data_return = {'intakes': intakes_data, 'watersheds': watersheds_data, 'intake_time_series': intake_time_series_data}
         return {"status": task.status, 'data': data_return}
     else:
         return {"status": task.status, 'data': {}}
