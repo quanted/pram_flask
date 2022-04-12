@@ -257,6 +257,7 @@ api.add_resource(tasks.SamStatus, '/rest/pram/sam/status/<string:task_id>')
 api.add_resource(tasks.SamData, '/rest/pram/sam/data/<string:task_id>')
 api.add_resource(tasks.SamSummaryHUC8, '/rest/pram/sam/summary/huc8/<string:task_id>')
 api.add_resource(tasks.SamSummaryHUC12, '/rest/pram/sam/summary/huc12/<string:task_id>')
+api.add_resource(tasks.SamMapData, '/rest/pram/sam/map_data/<string:task_id>')
 
 if __name__ == '__main__':
     app.run(port=7777, debug=True)

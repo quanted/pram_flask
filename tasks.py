@@ -120,6 +120,17 @@ class SamData(Resource):
             logging.info("SAM data not available for requested task id.")
         return Response(data_json, mimetype='application/json')
 
+class SamMapData(Resource):
+    def get(self, task_id):
+        logging.info("SAM mapping data request for task id: {}".format(task_id))
+        status = sam_status(task_id, map_data_only = True)
+        if status['status'] == 'SUCCESS':
+            data_json = json.dumps(status['data'])
+            logging.info("SAM data found, data request successful.")
+        else:
+            data_json = ""
+            logging.info("SAM data not available for requested task id.")
+        return Response(data_json, mimetype='application/json')
 
 class SamSummaryHUC8(Resource):
     def get(self, task_id):
@@ -168,18 +179,28 @@ def sam_run(self, jobID, inputs):
     mongo_db = connect_to_mongoDB()
     posts = mongo_db.posts
     time_stamp = datetime.utcnow()
-    data = {'_id': task_id, 'date': time_stamp, 'data': json.dumps(data['outputs'])}
+    intakes_json = data['outputs']['intakes']
+    watersheds_json = data['outputs']['watersheds']
+    intake_time_series_json = data['outputs']['intake_time_series']
+    data = {'_id': task_id, 'date': time_stamp, 'intakes': json.dumps(intakes_json), 'watersheds': json.dumps(watersheds_json),
+        'intake_time_series': json.dumps(intake_time_series_json)}
     posts.insert_one(data)
     logging.info("Completed SAM data db dump.")
 
 
-def sam_status(task_id):
+def sam_status(task_id, map_data_only=False):
     task = celery.AsyncResult(task_id)
     if task.status == "SUCCESS":
         mongo_db = connect_to_mongoDB()
         posts = mongo_db.posts
         db_record = dict(posts.find_one({'_id': task_id}))
-        data = json.loads(db_record.get("data", ""))
-        return {"status": task.status, 'data': data}
+        intakes_data = data = json.loads(db_record.get("intakes", ""))
+        watersheds_data = data = json.loads(db_record.get("watersheds", ""))
+        if map_data_only:
+            data_return = {'intakes': intakes_data, 'watersheds', watersheds_data}
+            return {"status": task.status, 'data': data_return}
+        intake_time_series_data = json.loads(db_record.get("intake_time_series", ""))
+        data_return = {'intakes': intakes_data, 'watersheds', watersheds_data, 'intake_time_series': intake_time_series_data}
+        return {"status": task.status, 'data': data_return}
     else:
         return {"status": task.status, 'data': {}}
