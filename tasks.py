@@ -181,7 +181,7 @@ def sam_run(self, jobID, inputs):
     intakes_json = data['outputs']['intakes']
     watersheds_json = data['outputs']['watersheds']
     intake_time_series_json = data['outputs']['intake_time_series']
-    save_sam_outputs(posts, task_id, {'intakes': intakes_data, 'watersheds': watersheds_data, 'intake_time_series': intake_time_series_data})
+    save_sam_outputs(posts, task_id, {'intakes': intakes_json, 'watersheds': watersheds_json, 'intake_time_series': intake_time_series_json})
     #data = {'_id': task_id, 'date': time_stamp, 'intakes': json.dumps(intakes_json), 'watersheds': json.dumps(watersheds_json),
     #    'intake_time_series': json.dumps(intake_time_series_json)}
     #posts.insert_one(data)
