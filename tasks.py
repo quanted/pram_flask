@@ -178,28 +178,36 @@ def sam_run(self, jobID, inputs):
     logging.info("Dumping SAM data into database...")
     mongo_db = connect_to_mongoDB()
     posts = mongo_db.posts
-    time_stamp = datetime.utcnow()
     intakes_json = data['outputs']['intakes']
     watersheds_json = data['outputs']['watersheds']
     intake_time_series_json = data['outputs']['intake_time_series']
-    data = {'_id': task_id, 'date': time_stamp, 'intakes': json.dumps(intakes_json), 'watersheds': json.dumps(watersheds_json),
-        'intake_time_series': json.dumps(intake_time_series_json)}
-    posts.insert_one(data)
+    save_sam_outputs(posts, task_id, {'intakes': intakes_data, 'watersheds': watersheds_data, 'intake_time_series': intake_time_series_data})
+    #data = {'_id': task_id, 'date': time_stamp, 'intakes': json.dumps(intakes_json), 'watersheds': json.dumps(watersheds_json),
+    #    'intake_time_series': json.dumps(intake_time_series_json)}
+    #posts.insert_one(data)
     logging.info("Completed SAM data db dump.")
 
+
+def save_sam_outputs(mongodb_posts, task_id, output_dict):
+    time_stamp = datetime.utcnow()
+    for  key, value in output_dict.items():
+        data = {'_id': task_id+'_'+key, 'date': time_stamp, 'data': value}
+        mongodb_posts.insert_one(data)
 
 def sam_status(task_id, map_data_only=False):
     task = celery.AsyncResult(task_id)
     if task.status == "SUCCESS":
         mongo_db = connect_to_mongoDB()
         posts = mongo_db.posts
-        db_record = dict(posts.find_one({'_id': task_id}))
-        intakes_data = data = json.loads(db_record.get("intakes", ""))
-        watersheds_data = data = json.loads(db_record.get("watersheds", ""))
+        intakes_db_record = dict(posts.find_one({'_id': task_id+'_intakes'}))
+        intakes_data = data = json.loads(intakes_db_record.get("data", ""))
+        watersheds_db_record = dict(posts.find_one({'_id': task_id+'_intakes'}))
+        watersheds_data = data = json.loads(watersheds_db_record.get("data", ""))
         if map_data_only:
             data_return = {'intakes': intakes_data, 'watersheds': watersheds_data}
             return {"status": task.status, 'data': data_return}
-        intake_time_series_data = json.loads(db_record.get("intake_time_series", ""))
+        intake_time_series_db_record = dict(posts.find_one({'_id'+'_intake_time_series': task_id+'_intakes'}))
+        intake_time_series_data = json.loads(intake_time_series_db_record.get("data", ""))
         data_return = {'intakes': intakes_data, 'watersheds': watersheds_data, 'intake_time_series': intake_time_series_data}
         return {"status": task.status, 'data': data_return}
     else:
