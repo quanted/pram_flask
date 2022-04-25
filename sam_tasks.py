@@ -219,9 +219,9 @@ def sam_status(task_id, map_data_only=False):
         
 def sam_output_xlsx(task_id):
     data_json = sam_status(task_id)
-    intakes_df = pd.read_json(data_json['data']['intakes'])
-    watersheds_df = pd.read_json(data_json['data']['watersheds'])
-    intake_time_series_df = pd.read_json(data_json['data']['intake_time_series'])
+    intakes_df = pd.DataFrame(data_json['data']['intakes'])
+    watersheds_df = pd.DataFrame(data_json['data']['watersheds'])
+    intake_time_series_df = pd.DataFrame(data_json['data']['intake_time_series'])
     output = io.BytesIO()
     #workbook = Workbook(output, {'in_memory': True})
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
