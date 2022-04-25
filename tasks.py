@@ -7,6 +7,7 @@ import os
 import logging
 import json
 import uuid
+import io
 from datetime import datetime
 
 from flask import request, Response
@@ -132,6 +133,13 @@ class SamMapData(Resource):
             logging.info("SAM data not available for requested task id.")
         return Response(data_json, mimetype='application/json')
 
+class SamAllData(Resource):
+    def get(self, task_id):
+        logging.info("SAM all zipped data request for task id: {}".format(task_id))
+        response = sam_output_xlsx(task_id)
+        return response
+        
+        
 class SamSummaryHUC8(Resource):
     def get(self, task_id):
         logging.info("SAM HUC8 summary request for task id: {}".format(task_id))
@@ -178,13 +186,7 @@ def sam_run(self, jobID, inputs):
     logging.info("Dumping SAM data into database...")
     mongo_db = connect_to_mongoDB()
     posts = mongo_db.posts
-    #intakes_json = data['outputs']['intakes']
-    #watersheds_json = data['outputs']['watersheds']
-    #intake_time_series_json = data['outputs']['intake_time_series']
     save_sam_outputs(posts, task_id, data['outputs'])
-    #data = {'_id': task_id, 'date': time_stamp, 'intakes': json.dumps(intakes_json), 'watersheds': json.dumps(watersheds_json),
-    #    'intake_time_series': json.dumps(intake_time_series_json)}
-    #posts.insert_one(data)
     logging.info("Completed SAM data db dump.")
 
 
@@ -201,9 +203,9 @@ def sam_status(task_id, map_data_only=False):
         mongo_db = connect_to_mongoDB()
         posts = mongo_db.posts
         intakes_db_record = dict(posts.find_one({'_id': task_id+'_intakes'}))
-        intakes_data = data = json.loads(intakes_db_record.get("data", ""))
+        intakes_data =  json.loads(intakes_db_record.get("data", ""))
         watersheds_db_record = dict(posts.find_one({'_id': task_id+'_watersheds'}))
-        watersheds_data = data = json.loads(watersheds_db_record.get("data", ""))
+        watersheds_data =  json.loads(watersheds_db_record.get("data", ""))
         if map_data_only:
             data_return = {'intakes': intakes_data, 'watersheds': watersheds_data}
             return {"status": task.status, 'data': data_return}
@@ -213,3 +215,29 @@ def sam_status(task_id, map_data_only=False):
         return {"status": task.status, 'data': data_return}
     else:
         return {"status": task.status, 'data': {}}
+        
+def sam_output_xlsx(task_id):
+    data_json = sam_status(task_id)
+    intakes_df = pd.read_json(data_json['data']['intakes'])
+    watersheds_df = pd.read_json(data_json['data']['watersheds'])
+    intake_time_series_df = pd.read_json(data_json['data']['intake_time_series'])
+    output = io.BytesIO()
+    //workbook = Workbook(output, {'in_memory': True})
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    intakes_df.to_excel(writer, sheet_name='intakes')
+    watersheds_df.to_excel(writer, sheet_name='watersheds')
+    intake_time_series_df.to_excel(writer, sheet_name='intake_time_series')
+    //writer.book.use_zip64()
+    writer.save()
+    //workbook.close()
+    output.seek(0)
+    response = HttpResponse(output.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response['Content-Disposition'] = "attachment; filename='sam_output_{}_.xlsx".format(task_id)
+    output.close()
+    return response
+
+    
+
+
+
+    
