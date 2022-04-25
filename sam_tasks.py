@@ -232,7 +232,7 @@ def sam_output_xlsx(task_id):
     writer.save()
     #workbook.close()
     output.seek(0)
-    response = send_file(output.read(), mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    response = send_file(output, mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         as_attachment=True, download_name = "sam_output_{}.xlsx".format(task_id))
     output.close()
     return response
