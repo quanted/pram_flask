@@ -109,7 +109,7 @@ class SamRun(Resource):
         return response
 
 
-class SamData(Resource):
+class SamJsonData(Resource):
     def get(self, task_id):
         logging.info("SAM data request for task id: {}".format(task_id))
         status = sam_status(task_id)
@@ -133,7 +133,7 @@ class SamMapData(Resource):
             logging.info("SAM data not available for requested task id.")
         return Response(data_json, mimetype='application/json')
 
-class SamAllData(Resource):
+class SamDataExcel(Resource):
     def get(self, task_id):
         logging.info("SAM all zipped data request for task id: {}".format(task_id))
         response = sam_output_xlsx(task_id)
@@ -222,14 +222,14 @@ def sam_output_xlsx(task_id):
     watersheds_df = pd.read_json(data_json['data']['watersheds'])
     intake_time_series_df = pd.read_json(data_json['data']['intake_time_series'])
     output = io.BytesIO()
-    //workbook = Workbook(output, {'in_memory': True})
+    #workbook = Workbook(output, {'in_memory': True})
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
     intakes_df.to_excel(writer, sheet_name='intakes')
     watersheds_df.to_excel(writer, sheet_name='watersheds')
     intake_time_series_df.to_excel(writer, sheet_name='intake_time_series')
-    //writer.book.use_zip64()
+    #writer.book.use_zip64()
     writer.save()
-    //workbook.close()
+    #workbook.close()
     output.seek(0)
     response = HttpResponse(output.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     response['Content-Disposition'] = "attachment; filename='sam_output_{}_.xlsx".format(task_id)
