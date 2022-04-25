@@ -254,7 +254,7 @@ api.add_resource(varroapop.VarroapopGetLog, '/rest/pram/varroapop/<string:api_se
 print('http://localhost:7777/rest/pram/sam/')
 api.add_resource(tasks.SamRun, '/rest/pram/sam/')
 api.add_resource(tasks.SamStatus, '/rest/pram/sam/status/<string:task_id>')
-api.add_resource(tasks.SamData, '/rest/pram/sam/data/<string:task_id>')
+api.add_resource(tasks.SamDataExcel, '/rest/pram/sam/data/<string:task_id>')
 api.add_resource(tasks.SamSummaryHUC8, '/rest/pram/sam/summary/huc8/<string:task_id>')
 api.add_resource(tasks.SamSummaryHUC12, '/rest/pram/sam/summary/huc12/<string:task_id>')
 api.add_resource(tasks.SamMapData, '/rest/pram/sam/map_data/<string:task_id>')
