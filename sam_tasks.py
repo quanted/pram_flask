@@ -223,17 +223,16 @@ def sam_output_xlsx(task_id):
     watersheds_df = pd.DataFrame(data_json['data']['watersheds'])
     intake_time_series_df = pd.DataFrame(data_json['data']['intake_time_series'])
     output = io.BytesIO()
-    #workbook = Workbook(output, {'in_memory': True})
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
     intakes_df.to_excel(writer, sheet_name='intakes')
     watersheds_df.to_excel(writer, sheet_name='watersheds')
     intake_time_series_df.to_excel(writer, sheet_name='intake_time_series')
     #writer.book.use_zip64()
     writer.save()
-    #workbook.close()
     output.seek(0)
     response = send_file(output, as_attachment=True, download_name = "sam_output_{}.xlsx".format(task_id))
-    #output.close()
+    response.headers["Content-Disposition"] = "attachment; filename=test.xlsx"
+    response.headers["Content-Type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     return response
 
     
