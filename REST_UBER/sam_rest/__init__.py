@@ -3,7 +3,7 @@ from pram_flask.ubertool.ubertool.sam import sam_exe as sam
 from flask import request
 from pram_flask.REST_UBER import rest_validation, rest_schema, rest_model_caller
 #from ubertool_ecorest.celery_qed import tasks
-from pram_flask import tasks
+from pram_flask import sam_tasks
 
 class SamHandler(Resource):
     def __init__(self):
@@ -46,7 +46,7 @@ class SamStatus(SamHandler):
         :param jobId:
         :return:
         """
-        return tasks.sam_status(jobId)
+        return sam_tasks.sam_status(jobId)
 
 
 class SamPost(SamHandler):
@@ -62,7 +62,7 @@ class SamPost(SamHandler):
 
         if inputs:
             # return rest_model_caller.model_run(self.name, jobId, inputs, module=sam)
-            tasks.sam_run(jobId, request.json)
+            sam_tasks.sam_run(jobId, request.json)
             return
         else:
             return rest_model_caller.error(self.name, jobId, inputs)
