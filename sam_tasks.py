@@ -11,7 +11,7 @@ import io
 from datetime import datetime
 import pandas as pd
 
-from flask import request, Response
+from flask import request, Response, send_file
 from flask_restful import Resource
 
 import pymongo as pymongo
@@ -232,8 +232,8 @@ def sam_output_xlsx(task_id):
     writer.save()
     #workbook.close()
     output.seek(0)
-    response = HttpResponse(output.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    response['Content-Disposition'] = "attachment; filename='sam_output_{}_.xlsx".format(task_id)
+    response = send_file(output.read(), mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        as_attachment=True, download_name = "sam_output_{}.xlsx".format(task_id))
     output.close()
     return response
 
