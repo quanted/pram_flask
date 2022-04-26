@@ -138,6 +138,7 @@ class SamDataExcel(Resource):
     def get(self, task_id):
         logging.info("SAM all zipped data request for task id: {}".format(task_id))
         response = sam_output_xlsx(task_id)
+        logging.info(response.headers)
         return response
         
         
