@@ -232,8 +232,8 @@ def sam_output_xlsx(task_id):
     writer.save()
     output.seek(0)
     response = send_file(output, as_attachment=True, download_name = "sam_output_{}.xlsx".format(task_id))
-    response.headers["Content-Disposition"] = "attachment; filename=test.xlsx"
-    response.headers["Content-Type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    #response.headers["Content-Disposition"] = "attachment; filename=test.xlsx"
+    #response.headers["Content-Type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     return response
 
     
