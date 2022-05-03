@@ -222,7 +222,7 @@ def sam_output_xlsx(task_id):
     logging.info(data_json['data']['watersheds']['HUC_8'])
     intakes_df = pd.DataFrame(data_json['data']['intakes']['comid']).transpose()
     #watersheds_8_df = pd.DataFrame(data_json['data']['watersheds']['HUC_8'])
-    watersheds_8_df = pd.DataFrame.from_dict(data_json['data']['watersheds']['HUC_8']).transpose().stack().to_frame()
+    watersheds_8_df = pd.DataFrame.from_dict(data_json['data']['watersheds']['HUC_8'], orient='index').transpose().stack().to_frame()
     watersheds_8_df = pd.DataFrame(watersheds_8_df[0].values.tolist(), index=watersheds_8_df.index)
     watersheds_12_df = pd.DataFrame(data_json['data']['watersheds']['HUC_12'])
     #intake_time_series_df = pd.DataFrame(data_json['data']['intake_time_series'])
