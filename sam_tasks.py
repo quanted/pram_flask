@@ -231,10 +231,11 @@ def sam_output_xlsx(task_id):
     intakes_df.to_excel(writer, sheet_name='intakes')
     watersheds_8_df.to_excel(writer, sheet_name='HUC8_summaries')
     watersheds_12_df.to_excel(writer, sheet_name='HUC12_summaries')
+    writer.sheets['HUC8_summaries'].set_row(2, None, None, {'hidden': True})  # Fix pandas to_excel bug extra line
+    writer.sheets['HUC12_summaries'].set_row(2, None, None, {'hidden': True}) # Fix pandas to_excel bug extra line
     for id, data in data_json['data']['intake_time_series'].items():
         intake_time_series_df = pd.read_json(json.dumps(data), orient='split')
         intake_time_series_df.to_excel(writer, sheet_name='intake_time_series_{}'.format(id))
-    #intake_time_series_df.to_excel(writer, sheet_name='intake_time_series')
     #writer.book.use_zip64()
     writer.save()
     output.seek(0)
