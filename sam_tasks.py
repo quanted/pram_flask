@@ -231,7 +231,7 @@ def sam_output_xlsx(task_id):
     watersheds_12_df.to_excel(writer, sheet_name='HUC12_summaries')
     for id, data in data_json['data']['intake_time_series'].items():
         logging.info(data)
-        intake_time_series_df = pd.DataFrame(data)
+        intake_time_series_df = pd.read_json(data, orient='split')
         intake_time_series_df.to_excel(writer, sheet_name='intake_time_series_{}'.format(id))
     #intake_time_series_df.to_excel(writer, sheet_name='intake_time_series')
     #writer.book.use_zip64()
