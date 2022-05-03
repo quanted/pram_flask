@@ -138,7 +138,6 @@ class SamDataExcel(Resource):
     def get(self, task_id):
         logging.info("SAM all zipped data request for task id: {}".format(task_id))
         response = sam_output_xlsx(task_id)
-        logging.info(response.headers)
         return response
         
         
@@ -220,6 +219,7 @@ def sam_status(task_id, map_data_only=False):
         
 def sam_output_xlsx(task_id):
     data_json = sam_status(task_id)
+    logging.info(data_json['data']['intakes'])
     intakes_df = pd.DataFrame(data_json['data']['intakes'])
     watersheds_df = pd.DataFrame(data_json['data']['watersheds'])
     intake_time_series_df = pd.DataFrame(data_json['data']['intake_time_series'])
@@ -232,8 +232,6 @@ def sam_output_xlsx(task_id):
     writer.save()
     output.seek(0)
     response = send_file(output, as_attachment=True, download_name = "sam_output_{}.xlsx".format(task_id))
-    #response.headers["Content-Disposition"] = "attachment; filename=test.xlsx"
-    #response.headers["Content-Type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     return response
 
     
