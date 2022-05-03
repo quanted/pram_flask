@@ -219,7 +219,7 @@ def sam_status(task_id, map_data_only=False):
         
 def sam_output_xlsx(task_id):
     data_json = sam_status(task_id)
-    logging.info(data_json['data']['intakes'])
+    #logging.info(data_json['data']['intakes'])
     intakes_df = pd.DataFrame(data_json['data']['intakes']['comid'])
     watersheds_8_df = pd.DataFrame(data_json['data']['watersheds']['HUC_8'])
     watersheds_12_df = pd.DataFrame(data_json['data']['watersheds']['HUC_12'])
@@ -230,6 +230,7 @@ def sam_output_xlsx(task_id):
     watersheds_8_df.to_excel(writer, sheet_name='HUC8_summaries')
     watersheds_12_df.to_excel(writer, sheet_name='HUC12_summaries')
     for id, data in data_json['data']['intake_time_series'].items():
+        logging.info(data)
         intake_time_series_df = pd.DataFrame(data)
         intake_time_series_df.to_excel(writer, sheet_name='intake_time_series_{}'.format(id))
     #intake_time_series_df.to_excel(writer, sheet_name='intake_time_series')
