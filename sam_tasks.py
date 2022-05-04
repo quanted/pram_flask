@@ -236,11 +236,11 @@ def sam_output_xlsx(task_id):
                 watersheds_8_df.to_excel(writer, sheet_name='HUC8_summaries')
                 watersheds_12_df.to_excel(writer, sheet_name='HUC12_summaries')
         if data_json['data']['intake_time_series'] is not None:
-            for id, data in data_json['data']['intake_time_series'].items():
+            for comid, data in data_json['data']['intake_time_series'].items():
                 intake_time_series_df = pd.read_json(json.dumps(data), orient='split')
-                with zipf.open(os.path.join("intake_time_series","sam_output_{}.xlsx".format(task_id)), 'w') as buffer:
+                with zipf.open(os.path.join("intake_time_series","intake_comid_{}.xlsx".format(comid)), 'w') as buffer:
                     with pd.ExcelWriter(buffer) as writer:
-                        intake_time_series_df.to_excel(writer, sheet_name='intake_comid_{}'.format(id))
+                        intake_time_series_df.to_excel(writer, sheet_name='intake_comid_{}'.format(comid))
     #writer.book.use_zip64()
     #writer.save()
     #output.seek(0)
