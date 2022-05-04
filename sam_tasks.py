@@ -228,7 +228,7 @@ def sam_output_xlsx(task_id):
     watersheds_12_df = pd.DataFrame.from_dict(data_json['data']['watersheds']['HUC_12'], orient='index').stack().to_frame() # two lines to create multi-level indexing and sort
     watersheds_12_df = pd.DataFrame(watersheds_12_df[0].values.tolist(), index=watersheds_12_df.index).unstack(level=-1).swaplevel(axis=1).sort_index(axis=1)
     #output = io.BytesIO()
-    in_memory_zip = BytesIO()
+    in_memory_zip = io.BytesIO()
     with zipfile.ZipFile(in_memory_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
         with zipf.open("sam_output_{}.xlsx".format(task_id), 'w') as buffer:
             with pd.ExcelWriter(buffer) as writer:
