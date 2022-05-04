@@ -232,7 +232,9 @@ def sam_output_xlsx(task_id):
     with zipfile.ZipFile(in_memory_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
         with zipf.open("sam_output_{}.xlsx".format(task_id), 'w') as buffer:
             with pd.ExcelWriter(buffer) as writer:
-                intakes_df.to_excel(writer, sheet_name='intakes')
+                if intakes_df is not None:
+                    console.log(intakes_df)
+                    intakes_df.to_excel(writer, sheet_name='intakes')
                 watersheds_8_df.to_excel(writer, sheet_name='HUC8_summaries')
                 watersheds_12_df.to_excel(writer, sheet_name='HUC12_summaries')
         if data_json['data']['intake_time_series'] is not None:
