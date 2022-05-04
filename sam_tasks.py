@@ -8,6 +8,7 @@ import logging
 import json
 import uuid
 import io
+import zipfile
 from datetime import datetime
 import pandas as pd
 
@@ -226,18 +227,25 @@ def sam_output_xlsx(task_id):
     logging.info(watersheds_8_df)
     watersheds_12_df = pd.DataFrame.from_dict(data_json['data']['watersheds']['HUC_12'], orient='index').stack().to_frame() # two lines to create multi-level indexing and sort
     watersheds_12_df = pd.DataFrame(watersheds_12_df[0].values.tolist(), index=watersheds_12_df.index).unstack(level=-1).swaplevel(axis=1).sort_index(axis=1)
-    output = io.BytesIO()
-    writer = pd.ExcelWriter(output, engine='xlsxwriter')
-    intakes_df.to_excel(writer, sheet_name='intakes')
-    watersheds_8_df.to_excel(writer, sheet_name='HUC8_summaries')
-    watersheds_12_df.to_excel(writer, sheet_name='HUC12_summaries')
-    for id, data in data_json['data']['intake_time_series'].items():
-        intake_time_series_df = pd.read_json(json.dumps(data), orient='split')
-        intake_time_series_df.to_excel(writer, sheet_name='intake_time_series_{}'.format(id))
+    #output = io.BytesIO()
+    in_memory_zip = BytesIO()
+    with zipfile.ZipFile(in_memory_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        with zipf.open("sam_output_{}.xlsx".format(task_id), 'w') as buffer:
+            with pd.ExcelWriter(buffer) as writer:
+                intakes_df.to_excel(writer, sheet_name='intakes')
+                watersheds_8_df.to_excel(writer, sheet_name='HUC8_summaries')
+                watersheds_12_df.to_excel(writer, sheet_name='HUC12_summaries')
+        if data_json['data']['intake_time_series'] is not None:
+            for id, data in data_json['data']['intake_time_series'].items():
+                intake_time_series_df = pd.read_json(json.dumps(data), orient='split')
+                with zipf.open(os.path.join("intake_time_series","sam_output_{}.xlsx".format(task_id)), 'w') as buffer:
+                    with pd.ExcelWriter(buffer) as writer:
+                        intake_time_series_df.to_excel(writer, sheet_name='intake_comid_{}'.format(id))
     #writer.book.use_zip64()
-    writer.save()
-    output.seek(0)
-    response = send_file(output, as_attachment=True, download_name = "sam_output_{}.xlsx".format(task_id))
+    #writer.save()
+    #output.seek(0)
+    in_memory_zip.seek(0)
+    response = send_file(in_memory_zip, as_attachment=True, download_name = "sam_output_{}.zip".format(task_id))
     return response
 
     
